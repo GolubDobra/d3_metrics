@@ -1,6 +1,6 @@
 import React from 'react';
-import Canvas from './Canvas';
-//import Data from './Data/Data';
+//import Canvas from './Canvas';
+import Canvas from './components/Canvas';
 
 function App() {
   return (
@@ -11,7 +11,6 @@ function App() {
       <div id="chart-container">
         <Canvas />
       </div>
-      <div>Hello!</div>
     </div>
   );
 }
