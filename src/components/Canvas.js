@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import useWindowSize from './useWindowSize';
 import Transformation from './Transformation';
 import * as d3 from 'd3';
-//import moment from 'moment';
 import 'moment/locale/ru';
 
 const Canvas = () => {
@@ -10,122 +9,89 @@ const Canvas = () => {
   const nameRef = useRef(null); //ссылается на элемент в DOM дереве (svg)
   const [width, height] = useWindowSize();
   const _data = Transformation();
+  const color = ['#503143', '#9a532b', '#c49b60', '#79ad9f', '#193439', '#1a1a1d'];
 
+  console.log(width, height);
   //МАССИВ МЕСЯЦЕВ и ДОБАВЛЕНИЕ Y КООРДИНАТЫ
   let domainValue = [];
+  let maxDomain = [];
+
+  let ind;
+
   _data.forEach((num, index, arr) => {
     num.date.locale('ru');
     if (num.id === 0) {
-      domainValue.push(num.date.format('MMMM')); //(num) => num.date.format('MMMM');
+      domainValue.push(num.date.format('MMMM'));
       num['yCoordinate'] = 0;
     } else {
       num['yCoordinate'] = arr[index - 1].yCoordinate + arr[index - 1].fact;
     }
+
+    ind = num.id;
   });
 
+  _data.forEach((num, index, arr) => {
+    if (num.id === ind) {
+      maxDomain.push(num.yCoordinate + num.fact);
+    }
+  });
+
+  //console.log(maxDomain);
   console.log(_data);
-  console.log(width, height);
-  console.log(domainValue);
 
-  // var A = d3.scaleBand().domain(domainValue).range([10, 50]);
-
-  // // console.log(A(''));
-
-  // console.log(A('February'));
-  // console.log(A('March'));
-  // console.log(A('April'));
-  // console.log(A('May'));
-
-  //SVG
-  // const margin = {
-  //   top: 50,
-  //   right: 50,
-  //   bottom: 50,
-  //   left: 50,
-  // };
-
-  // //const _width = 1400 - margin.left - margin.right;
-  // //const _height = 700 - margin.top - margin.bottom;
-  // const svg = d3
-  //   .data(_data)
-  //   .enter()
-  //   .attr('width', width + margin.left + margin.right)
-  //   .attr('height', height + margin.top + margin.bottom)
-  //   .style('border', '2px solid green')
-  //   .append('g')
-  //   .attr('transform', `translate(${margin.left}, ${margin.top})`);
-
-  // function draw() {
-  //   const barWidth = 45;
-  //   const barOffset = 23;
-  //   //const valueRange = [0, d3.max((data, d) => d.indicators[0].fact)];
-
-  //   //почему scaleLinear не функция????
-  //   //const y = d3.scaleLinear().domain(valueRange).range([0, 960]);
-  //   const bars = svg.data(_data);
-
-  //   //УДАЛЕНИЕ ЭЛЕМЕНТОВ!!!!!!
-  //   //bars.exit().transition().duration(1000).style('fill', 'Yellow').style('opacity', '0').remove();
-
-  //   //почему это обновляет данные???  обнавляет весь DOM
-  //   bars
-  //     .attr('class', 'new bar')
-  //     .style('fill', '#fff')
-  //     .transition() // не работает!!!!!!!!
-  //     .duration(1000)
-  //     .style('opacity', '1')
-  //     .style('fill', 'rgb(40, 82, 78)')
-  //     .attr('height', (d) =>
-  //       d.indicators.reduce(function (accumulator, currentValue) {
-  //         return accumulator + currentValue.fact;
-  //       }, -1),
-  //     )
-  //     .attr('x', (d, n) => n * barOffset + n * barOffset);
-
-  //   bars
-  //     .enter()
-  //     .append('rect')
-  //     .attr('class', 'bar')
-  //     .style('fill', '#fff')
-  //     .attr('width', barWidth)
-  //     .transition()
-  //     .duration(1000)
-  //     .style('opacity', '1')
-  //     .style('fill', 'rgb(180, 70, 85)')
-  //     .attr('height', (d) =>
-  //       d.indicators.reduce(function (accumulator, currentValue) {
-  //         return accumulator + currentValue.fact;
-  //       }, -1),
-  //     ) //надо будет поскладывать
-  //     .attr('x', (d, n) => n * barOffset + n * barOffset);
-  // }
-
-  // draw();
-
+  // D3
   const svg = d3.select('svg');
-  const bars = svg.selectAll('rect');
+
+  // MARGINS
+  const margin = { top: 20, right: 20, bottom: 100, left: 100 };
+  const graphWidth = width - margin.left - margin.right;
+  const graphHeight = height - margin.bottom - margin.top;
+  const graph = svg.append('g').attr('width', graphWidth).attr('height', graphHeight);
+  const bars = graph.selectAll('rect').data(_data);
+
+  // SCALES
+  const y = d3
+    .scaleLinear()
+    .domain([0, d3.max(maxDomain)])
+    .range([0, graphHeight]);
+  const x = d3.scaleBand().domain(domainValue).range([0, width]).padding(0.2);
+
+  // КООРДИНАТНЫЕ ПРЯМЫЕ
+  const yAxisGroup = graph.append('g');
+  const xAxisGroup = graph.append('g').attr('transform', `translate(0, ${graphHeight})`);
+
+  //УДАЛЕНИЕ БАРОВ
+  bars.exit().remove();
 
   //ДОБАВЛЯЕМ АТРИБУТЫ ДЛЯ RECT, КОТОРЫЕ УЖЕ В DOM
   bars
-    .data(_data)
-    .attr('width', 50)
-    .attr('height', (d) => d.fact)
-    .attr('fill', 'pink');
-  // const group = svg.append('g');
+    .attr('width', x.bandwidth())
+    .attr('height', (d) => y(d.fact))
+    .attr('x', (d) => x(d.date.format('MMMM')))
+    .attr('y', (d) => y(d.yCoordinate))
+    .attr('fill', (d) => color[d.id]);
 
-  //ДОБАВЛЯЕМ RECT В DOMs
+  //ДОБАВЛЯЕМ RECT В DOMы
   bars
     .enter()
     .append('rect')
-    .attr('width', 50)
-    .attr('height', (d) => d.fact)
-    .attr('fill', 'pink');
+    .attr('width', x.bandwidth())
+    .attr('height', (d) => y(d.fact))
+    .attr('x', (d) => x(d.date.format('MMMM')))
+    .attr('y', (d) => y(d.yCoordinate))
+    .attr('fill', (d) => color[d.id % color.length]);
 
-  return (
-    <svg ref={nameRef} width={width} height={height}>
-      <rect></rect>
-    </svg>
-  );
+  const xAxis = d3.axisBottom(x);
+  const yAxis = d3.axisLeft(y).tickFormat((d) => d.fact);
+  xAxisGroup.call(xAxis);
+  yAxisGroup.call(yAxis);
+  yAxisGroup.selectAll('text').attr('transform', 'translate(500)');
+
+  return <svg ref={nameRef} width={width} height={height}></svg>;
 };
 
 export default Canvas;
+
+// TODO: что-то надо сделать с тем, что блоки растянуты больше, чем нужно
+// возможно из-за этого не видно у координаты -- НЕТ
+// их совсем нет

@@ -15,9 +15,9 @@ const Transformation = () => {
       return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
     }
     //кол-во баров от 0 до 25, пример
-    let numOfBars = Math.round(Math.random() * (5 - 1) + 1);
+    let numOfBars = Math.round(Math.random() * (10 - 1) + 1);
     //Рандомное кол-во показаний в баре
-    let numOfValueInBar = Math.round(Math.random() * (6 - 1) + 1);
+    let numOfValueInBar = Math.round(Math.random() * (10 - 1) + 1);
 
     // локализация moment js
     let moment = require('moment');
@@ -29,7 +29,7 @@ const Transformation = () => {
     // });
 
     let planValue = Math.round(Math.random() * 100);
-    let preFactValue, preYCoordinateValue, yCoordinateValue;
+    // let preFactValue, preYCoordinateValue, yCoordinateValue;
     let factValue = Math.round(Math.random() * 100);
     // console.log(numOfBars);
     // console.log(numOfValueInBar);
@@ -37,23 +37,23 @@ const Transformation = () => {
     setRange(
       Array.from(new Array(numOfBars * numOfValueInBar), (_, i) => {
         moment.locale('ru');
-        preFactValue = factValue;
-        factValue = Math.round(Math.random() * 100);
-        preYCoordinateValue = yCoordinateValue;
+        // preFactValue = factValue;
+        factValue = Math.round(Math.random() * (100 - 1) + 1);
+        // preYCoordinateValue = yCoordinateValue;
         if (i % numOfValueInBar === 0) {
-          yCoordinateValue = 0;
+          // yCoordinateValue = 0;
           planValue = Math.round(Math.random() * 100);
           dateOfStart.add(1, 'months');
-        } else {
-          yCoordinateValue = preFactValue + preYCoordinateValue;
-        }
+        } //else {
+        //   yCoordinateValue = preFactValue + preYCoordinateValue;
+        // }
         return {
           id: i % numOfValueInBar, // индекс класса элементов
           date:
             i % numOfValueInBar === 0
               ? moment(dateOfStart.format()).add(1, 'months')
               : moment(dateOfStart).set({ M: dateOfStart.format('M') }), //arrOfDate[Math.floor(i / numOfValueInBar)], //за какой период данные
-          fact: factValue,
+          fact: factValue, //i * 100 + 100,
           //yCoordinate: yCoordinateValue,
           rank: 1, //разрядность = 1,
           byPeriod: true, //true/false, отображение за период (true) или на дату (false)

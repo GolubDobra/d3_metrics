@@ -17,7 +17,8 @@ code {
 } */
 
 svg {
-  border: 2px solid salmon;
+  /* border: 2px solid salmon; */
+  padding: 20px;
 }
 
 h1 {
